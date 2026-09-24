@@ -1,217 +1,192 @@
 # Movie Success Prediction Analysis
+# Project Overview
 
-##Project Overview
+This capstone project focuses on building a Machine Learning classification model to classify movies into three IMDb-rating-based success categories:
 
-This capstone project focuses on building a Machine Learning classification model to classify movies into three categories:
+Hit — IMDb Score ≥ 6
+Average — IMDb Score ≥ 3 and < 6
+Flop — IMDb Score < 3
 
-- **Hit** — IMDb Score ≥ 6
-- **Average** — IMDb Score ≥ 3 and < 6
-- **Flop** — IMDb Score < 3
+The project covers the complete Machine Learning workflow, including data cleaning, exploratory data analysis, preprocessing, feature selection, model building, model evaluation, comparison, and hyperparameter tuning.
 
-The project covers the complete Machine Learning workflow including data cleaning, exploratory data analysis, preprocessing, model building, evaluation and hyperparameter tuning.
+# Project Objective
 
-## Project Objective
+The objective of this project is to analyze different movie characteristics and build classification models that can categorize movies as Hit, Average, or Flop based on IMDb score ranges.
 
-The objective of this project is to:
+The project also aims to identify relationships between movie-related features and the IMDb-rating-based success categories and compare the performance of different Machine Learning classification algorithms.
 
-- Analyze the factors associated with movie success.
-- Perform Exploratory Data Analysis (EDA) to identify patterns and relationships.
-- Build classification models to classify movies as Hit, Average or Flop.
-- Compare the performance of different Machine Learning algorithms.
-- Understand the impact of class imbalance on model performance.
+# Dataset
 
-## Dataset
+The dataset contains information about movies, including:
 
-The original dataset contained:
+Budget
+Gross Revenue
+Duration
+Genres
+Content Rating
+Country and Language
+Number of Voted Users
+User Reviews
+Critic Reviews
+Movie Facebook Likes
+Cast-related Facebook Likes
+IMDb Score
 
-- **5,043 rows**
-- **28 columns**
+After data cleaning, the final dataset contained 4,998 movie records.
 
-After removing duplicate records:
+# Target Variable
 
-- **4,998 movies** remained.
+A new target variable called classify was created from imdb_score.
 
-The dataset contains information such as:
+The categories are:
 
-- Budget
-- Gross revenue
-- Duration
-- Genres
-- Director and actor information
-- Number of IMDb votes
-- Critic and user reviews
-- Facebook likes
-- Language
-- Country
-- Content rating
-- IMDb score
-  
+Flop: IMDb Score < 3
+Average: IMDb Score ≥ 3 and < 6
+Hit: IMDb Score ≥ 6
 
-## Data Cleaning
+The final target distribution was:
 
-The following data-cleaning steps were performed:
+Hit: 3,556 movies
+Average: 1,401 movies
+Flop: 41 movies
 
-- Removed **45 duplicate records**.
-- Handled missing numerical values using the **median**.
-- Handled missing categorical values.
-- Removed the `movie_imdb_link` column.
-- Created the target variable `classify`.
-- Excluded `imdb_score` from model features to prevent **target leakage**.
-- Examined outliers and skewed numerical variables.
+This shows that the target variable is highly imbalanced, particularly for the Flop category.
 
+# Exploratory Data Analysis
 
-##  Exploratory Data Analysis
+EDA was performed to understand feature distributions, identify outliers, examine relationships between movie characteristics and the target variable, and detect correlations between numerical features.
 
-EDA was performed to understand distributions, relationships and patterns in the dataset.
+# Important EDA Findings
 
-Some important observations:
+Movie duration showed some variation across the success categories. The median duration was approximately 107 minutes for Hit movies, 97 minutes for Average movies, and 92 minutes for Flop movies.
 
-- IMDb scores were mainly concentrated between approximately **5 and 8**.
-- Hit movies had a median duration of approximately **107 minutes**.
-- Average movies had a median duration of approximately **97 minutes**.
-- Flop movies had a median duration of approximately **92 minutes**.
-- Median budget was approximately **20 million** across all three success categories.
-- Strong correlations were identified between some numerical features.
+For budget analysis, original reported values were used rather than median-imputed values. Median budgets were approximately:
 
-A strong correlation of approximately **0.95** was observed between:
+Hit: $19.8 million
+Average: $20.0 million
+Flop: $19.0 million
 
-`actor_1_facebook_likes`
+The similarity between these values suggests that budget alone does not clearly distinguish the IMDb-rating-based success categories.
 
-and
+Gross revenue showed a clearer difference between categories. Using original reported gross values, median gross revenue was approximately:
 
-`cast_total_facebook_likes`
+Hit: $27.30 million
+Average: $22.13 million
+Flop: $9.11 million
 
-Therefore, `actor_1_facebook_likes` was removed to reduce multicollinearity.
+This indicates an association between higher IMDb-rating-based success categories and higher gross revenue in this dataset.
 
+# Correlation and Multicollinearity
 
-##  Class Imbalance
+A correlation heatmap was used to examine relationships between numerical features.
 
-The target variable was highly imbalanced:
+A strong positive correlation of approximately 0.95 was identified between actor_1_facebook_likes and cast_total_facebook_likes.
 
-| Movie Category | Number of Movies |
-|---|---:|
-| Hit | 3,556 |
-| Average | 1,401 |
-| Flop | 41 |
+To reduce multicollinearity, actor_1_facebook_likes was removed from the model input.
 
-The very small number of Flop movies became an important limitation of the project.
+# Feature Selection and Preprocessing
 
+imdb_score was excluded from the input features because it was directly used to create the target variable. Including it would result in target leakage.
 
-## Data Preprocessing
+movie_title was excluded because it primarily acts as an identifier.
 
-The preprocessing stage included:
+High-cardinality categorical variables were also excluded from the final model input:
 
-- Categorical encoding
-- Feature selection
-- Multicollinearity handling
-- Separating independent variables (`X`) and target (`y`)
-- 80/20 train-test split
-- Stratified sampling
-- Feature scaling using `StandardScaler` for Logistic Regression
+director_name
+actor_1_name
+actor_2_name
+actor_3_name
+plot_keywords
 
-The final model dataset contained **24 input features**.
+These columns contained a large number of unique values, and directly applying Label Encoding would assign arbitrary numerical values to names and keywords.
 
+The remaining categorical variables were converted into numerical form using Label Encoding.
 
-## Machine Learning Models
+After feature selection, 19 input features were used for model building.
 
-The following classification algorithms were evaluated:
-1. Logistic Regression
-2. Decision Tree
-3. Random Forest
-Random Forest was also optimized using **GridSearchCV**.
+The dataset was split into:
 
+80% Training Data
+20% Testing Data
 
-# Model Performance
+Stratified sampling was used to preserve the target class distribution.
 
-| Model | Accuracy | Hit Recall | Average Recall | Flop Recall | Macro F1 |
-|---|---:|---:|---:|---:|---:|
-| Logistic Regression | 75.6% | 92% | 36% | 0% | 0.44 |
-| Decision Tree | 71.9% | 82% | 48% | 0% | 0.44 |
-| Random Forest | **80.1%** | **94%** | 47% | 0% | 0.48 |
-| Tuned Random Forest | 77.5% | 81% | **72%** | 0% | **0.50** |
+StandardScaler was applied where required to bring features onto a comparable scale.
 
-Random Forest achieved the highest overall accuracy of **80.1%**.
-However, because the dataset is highly imbalanced, accuracy alone was not considered sufficient for evaluating the models.
+# Machine Learning Models
 
+# The following classification algorithms were evaluated:
 
-## Hyperparameter Tuning
+* Logistic Regression
+* Decision Tree Classifier
+* Random Forest Classifier
+* Tuned Random Forest Classifier
+* Model Performance
+* Model	Accuracy	Macro F1
+* Logistic Regression	76.1%	0.44
+* Decision Tree	73.0%	0.48
+* Random Forest	80.3%	0.49
+* Tuned Random Forest	77.9%	0.53
 
-Random Forest was tuned using **GridSearchCV with 3-fold cross-validation**.
-The optimization metric used was **Macro F1**, so that each target class received equal importance.
+Random Forest achieved the highest overall accuracy at 80.3%.
 
-Best parameters:
+However, because the dataset is highly imbalanced, accuracy alone was not considered sufficient for evaluating model performance.
 
-- `n_estimators = 100`
-- `max_depth = 10`
-- `min_samples_split = 5`
-- `class_weight = balanced`
+Precision, recall, F1-score, Macro F1-score, and confusion matrices were also examined.
 
-Best cross-validation Macro F1:
-**0.546**
+# Hyperparameter Tuning
+
+Random Forest was further optimized using GridSearchCV.
+
+Macro F1-score was used as the scoring metric to place greater emphasis on balanced performance across the three target classes.
+
+The selected parameters were:
+
+* class_weight: balanced
+* max_depth: 10
+* min_samples_split: 5
+* n_estimators: 200
 
 After tuning:
-- Accuracy changed from **80.1% → 77.5%**
-- Average Recall improved from **47% → 72%**
-- Macro F1 improved from **0.48 → 0.50**
 
-This demonstrates the trade-off between overall accuracy and balanced class performance.
+Accuracy changed from 80.3% to 77.9%.
+Macro F1-score improved from 0.49 to 0.53.
+Correct Average predictions increased from 135 out of 280 to 210 out of 280.
+The tuned model correctly identified 1 out of 8 Flop movies, compared with zero correctly identified by the original Random Forest.
 
----
+Therefore, tuning resulted in a trade-off between overall accuracy and more balanced class-level performance.
 
-## Key Findings
+# Key Findings
+* Random Forest achieved the highest overall accuracy of 80.3%.
+* Tuned Random Forest achieved the highest Macro F1-score of 0.53.
+* Budget alone did not clearly distinguish Hit, Average, and Flop categories.
+* Gross revenue showed a clearer association with the IMDb-rating-based success categories.
+* Severe class imbalance significantly affected prediction of the Flop category.
+* Hyperparameter tuning improved the prediction of Average movies and slightly improved Flop detection.
+* Accuracy alone can be misleading when evaluating an imbalanced classification problem.
 
-- Random Forest achieved the highest overall accuracy at **80.1%**.
-- Hyperparameter tuning significantly improved prediction of the Average category.
-- Average Recall increased from **47% to 72%**.
-- Macro F1 improved from **0.48 to 0.50**.
-- None of the models correctly identified the Flop category.
-- Accuracy alone can be misleading when working with highly imbalanced datasets.
+# Project Limitations
 
+* The dataset is highly imbalanced, with only 41 Flop movies.
+* Flop prediction remained weak because of the limited number of Flop observations.
+* Some numerical variables contain extreme or skewed values.
+* Some features, such as gross revenue, user votes, and reviews, may contain post-release information. Therefore, the current model should not be considered a * purely pre-release forecasting system.
+* Future improvements could focus on obtaining more balanced data and using more pre-release features.
 
-## Limitations
+# Conclusion
 
-The major limitation is the severe class imbalance.
-Only **41 movies** belonged to the Flop category.
-After train-test splitting:
-- Training Flops: **33**
-- Testing Flops: **8**
-This provided the models with very limited information for learning the characteristics of Flop movies.
-Some variables such as gross revenue, number of votes and reviews are also generally available after a movie has been released. Therefore, the current project should be considered a historical classification model rather than a purely pre-release movie success forecasting system.
+* This project demonstrates an end-to-end Machine Learning classification workflow for categorizing movies into Hit, Average, and Flop categories based on IMDb score ranges.
+* The analysis showed that budget alone did not clearly differentiate the three success categories, while gross revenue showed a clearer association with IMDb-rating-based movie success.
+* Random Forest achieved the highest overall accuracy of 80.3%. After hyperparameter tuning, accuracy decreased slightly to 77.9%, while Macro F1-score improved from 0.49 to 0.53, indicating more balanced performance across the target categories.
+* The project highlights the importance of evaluating imbalanced classification models using precision, recall, F1-score, and Macro F1-score in addition to overall accuracy.
 
+# Tools and Technologies
+Python
+Pandas
+NumPy
+Matplotlib
+Seaborn
+Scikit-learn
+Jupyter Notebook
 
-##  Future Scope
-
-Future improvements could include:
-
-- Collecting more balanced movie data, particularly more Flop examples.
-- Exploring suitable class-balancing techniques.
-- Improving categorical feature encoding.
-- Further feature engineering.
-- Creating better representations of genres, actors and directors.
-- Building a true pre-release prediction model using only information available before movie release.
-- Evaluating the model on newer or external movie datasets.
-
-##  Technologies Used
-
-- Python
-- Jupyter Notebook
-- Pandas
-- NumPy
-- Matplotlib
-- Scikit-learn
-
-
-## Project Files
-
-- `Data_Cleaning_and_EDA.ipynb` — Data cleaning and exploratory data analysis
-- `feature_engineering and preprocessing.ipynb` — Feature engineering and preprocessing
-- `Model Building and Evaluation.ipynb` — Model training, evaluation and hyperparameter tuning
-- `movie_metadata.csv` — Original dataset
-- `cleaned_movie_data.csv` — Cleaned dataset
-
-
-## Author
-
-**Vidhi Jain**
-
-Machine Learning Capstone Project
+# BY VIDHI JAIN
